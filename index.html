@@ -3,119 +3,186 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Personal Finance Tracker</title>
+  <title>Finance</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://unpkg.com/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
 <body>
 <div class="container">
   <header>
-    <h1>Personal Finance Tracker</h1>
+    <div class="header-top">
+      <h1><i class="fas fa-chart-line"></i> Finance</h1>
+      <div class="header-controls">
+        <button id="themeToggle" class="theme-toggle" title="Toggle Dark/Light Mode">
+          <i class="fas fa-moon"></i>
+        </button>
+        <button id="exportData" class="export-btn" title="Export Data">
+          <i class="fas fa-download"></i>
+        </button>
+      </div>
+    </div>
     <div class="balance-info">
       <div class="balance-card">
-        <h3>Total Balance</h3>
-        <span id="totalBalance">$0.00</span>
+        <div class="card-icon">
+          <i class="fas fa-wallet"></i>
+        </div>
+        <div class="card-content">
+          <h3>Total Balance</h3>
+          <span id="totalBalance">$0.00</span>
+        </div>
       </div>
       <div class="balance-card income">
-        <h3>Total Income</h3>
-        <span id="totalIncome">$0.00</span>
+        <div class="card-icon">
+          <i class="fas fa-arrow-up"></i>
+        </div>
+        <div class="card-content">
+          <h3>Total Income</h3>
+          <span id="totalIncome">$0.00</span>
+        </div>
       </div>
       <div class="balance-card expense">
-        <h3>Total Expenses</h3>
-        <span id="totalExpenses">$0.00</span>
+        <div class="card-icon">
+          <i class="fas fa-arrow-down"></i>
+        </div>
+        <div class="card-content">
+          <h3>Total Expenses</h3>
+          <span id="totalExpenses">$0.00</span>
+        </div>
       </div>
     </div>
   </header>
 
   <main>
+    <!-- Quick Stats Section -->
+    <div class="quick-stats">
+      <div class="stat-card">
+        <i class="fas fa-calendar-week"></i>
+        <div>
+          <h4>This Week</h4>
+          <span id="weeklySpent">$0.00</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-calendar-alt"></i>
+        <div>
+          <h4>This Month</h4>
+          <span id="monthlySpent">$0.00</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-receipt"></i>
+        <div>
+          <h4>Total Transactions</h4>
+          <span id="totalTransactions">0</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-star"></i>
+        <div>
+          <h4>Top Category</h4>
+          <span id="topCategory">None</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial Goals Section -->
+    <div class="goals-section">
+      <h2><i class="fas fa-bullseye"></i> Financial Goals</h2>
+      <div class="goals-container">
+        <div class="goal-form">
+          <input type="text" id="goalName" placeholder="Goal name (e.g., Emergency Fund)">
+          <input type="number" id="goalTarget" placeholder="Target amount" step="0.01">
+          <input type="number" id="goalCurrent" placeholder="Current amount" step="0.01">
+          <button onclick="tracker.addGoal()"><i class="fas fa-plus"></i> Add Goal</button>
+        </div>
+        <div id="goalsList"></div>
+      </div>
+    </div>
+
     <div class="input-section">
-      <h2>Add Transaction</h2>
+      <h2><i class="fas fa-plus-circle"></i> Add Transaction</h2>
       <form id="transactionForm">
         <div class="form-group">
-          <label for="description">Description</label>
+          <label for="description"><i class="fas fa-edit"></i> Description</label>
           <input type="text" id="description" required>
         </div>
         <div class="form-group">
-          <label for="amount">Amount</label>
+          <label for="amount"><i class="fas fa-dollar-sign"></i> Amount</label>
           <input type="number" id="amount" step="0.01" required>
         </div>
         <div class="form-group">
-          <label for="category">Category</label>
+          <label for="category"><i class="fas fa-tags"></i> Category</label>
           <select id="category" required>
             <option value="">Select Category</option>
-            <option value="food">Food & Dining</option>
-            <option value="transportation">Transportation</option>
-            <option value="shopping">Shopping</option>
-            <option value="entertainment">Entertainment</option>
-            <option value="utilities">Utilities</option>
-            <option value="healthcare">Healthcare</option>
-            <option value="salary">Salary</option>
-            <option value="freelance">Freelance</option>
-            <option value="investment">Investment</option>
-            <option value="other">Other</option>
+            <option value="food">🍽️ Food & Dining</option>
+            <option value="transportation">🚗 Transportation</option>
+            <option value="shopping">🛍️ Shopping</option>
+            <option value="entertainment">🎬 Entertainment</option>
+            <option value="utilities">💡 Utilities</option>
+            <option value="healthcare">🏥 Healthcare</option>
+            <option value="salary">💰 Salary</option>
+            <option value="freelance">💼 Freelance</option>
+            <option value="investment">📈 Investment</option>
+            <option value="other">📦 Other</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="type">Type</label>
+          <label for="type"><i class="fas fa-exchange-alt"></i> Type</label>
           <select id="type" required>
             <option value="">Select Type</option>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
+            <option value="income">📈 Income</option>
+            <option value="expense">📉 Expense</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="date">Date</label>
+          <label for="date"><i class="fas fa-calendar"></i> Date</label>
           <input type="date" id="date" required>
         </div>
-        <button type="submit">Add Transaction</button>
+        <button type="submit"><i class="fas fa-plus"></i> Add Transaction</button>
       </form>
     </div>
 
     <div class="dashboard">
-      <div class="charts-section">
-        <div class="chart-container">
-          <h3>Expense Categories</h3>
-          <canvas id="categoryChart"></canvas>
-        </div>
-        <div class="chart-container">
-          <h3>Monthly Trend</h3>
-          <canvas id="trendChart"></canvas>
-        </div>
-      </div>
-
       <div class="budget-section">
-        <h3>Budget Management</h3>
+        <h3><i class="fas fa-piggy-bank"></i> Budget Management</h3>
         <div id="budgetList"></div>
         <div class="budget-form">
           <input type="text" id="budgetCategory" placeholder="Category">
           <input type="number" id="budgetAmount" placeholder="Budget Amount" step="0.01">
-          <button onclick="addBudget()">Set Budget</button>
+          <button onclick="addBudget()"><i class="fas fa-plus"></i> Set Budget</button>
         </div>
+      </div>
+      
+      <div class="category-summary">
+        <h3><i class="fas fa-chart-pie"></i> Category Breakdown</h3>
+        <div id="categoryBreakdown"></div>
       </div>
     </div>
 
     <div class="transactions-section">
-      <h2>Recent Transactions</h2>
+      <h2><i class="fas fa-history"></i> Recent Transactions</h2>
       <div class="transaction-filters">
         <select id="filterCategory">
           <option value="">All Categories</option>
-          <option value="food">Food & Dining</option>
-          <option value="transportation">Transportation</option>
-          <option value="shopping">Shopping</option>
-          <option value="entertainment">Entertainment</option>
-          <option value="utilities">Utilities</option>
-          <option value="healthcare">Healthcare</option>
-          <option value="salary">Salary</option>
-          <option value="freelance">Freelance</option>
-          <option value="investment">Investment</option>
-          <option value="other">Other</option>
+          <option value="food">🍽️ Food & Dining</option>
+          <option value="transportation">🚗 Transportation</option>
+          <option value="shopping">🛍️ Shopping</option>
+          <option value="entertainment">🎬 Entertainment</option>
+          <option value="utilities">💡 Utilities</option>
+          <option value="healthcare">🏥 Healthcare</option>
+          <option value="salary">💰 Salary</option>
+          <option value="freelance">💼 Freelance</option>
+          <option value="investment">📈 Investment</option>
+          <option value="other">📦 Other</option>
         </select>
         <select id="filterType">
           <option value="">All Types</option>
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
+          <option value="income">📈 Income</option>
+          <option value="expense">📉 Expense</option>
         </select>
-        <input type="text" id="searchTransaction" placeholder="Search transactions...">
+        <input type="text" id="searchTransaction" placeholder="🔍 Search transactions...">
+        <button id="clearFilters" title="Clear all filters"><i class="fas fa-times"></i></button>
       </div>
       <div id="transactionsList"></div>
     </div>
