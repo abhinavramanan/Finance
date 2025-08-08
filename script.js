@@ -4,6 +4,7 @@ class FinanceTracker {
         this.budgets = JSON.parse(localStorage.getItem('budgets')) || {};
         this.categoryChart = null;
         this.trendChart = null;
+        this.theme = localStorage.getItem('theme') || 'light';
         this.init();
     }
 
@@ -11,7 +12,21 @@ class FinanceTracker {
         this.setupEventListeners();
         this.updateDisplay();
         this.initCharts();
+        this.initTheme();
         document.getElementById('date').value = new Date().toISOString().split('T')[0];
+    }
+
+    initTheme() {
+        document.documentElement.setAttribute('data-theme', this.theme);
+        const themeToggle = document.getElementById('themeToggle');
+        const icon = themeToggle.querySelector('i');
+        icon.className = this.theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
+    toggleTheme() {
+        this.theme = this.theme === 'light' ? 'dark' : 'light';
+        localStorage.setItem('theme', this.theme);
+        this.initTheme();
     }
 
     setupEventListeners() {
@@ -30,6 +45,10 @@ class FinanceTracker {
 
         document.getElementById('searchTransaction').addEventListener('input', () => {
             this.filterTransactions();
+        });
+
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            this.toggleTheme();
         });
     }
 
@@ -137,6 +156,13 @@ class FinanceTracker {
     }
 
     initCharts() {
+        if (typeof Chart === 'undefined') {
+            // Fallback when Chart.js is not available
+            document.getElementById('categoryChart').innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-muted); font-style: italic;">Chart library not available</div>';
+            document.getElementById('trendChart').innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-muted); font-style: italic;">Chart library not available</div>';
+            return;
+        }
+
         const categoryCtx = document.getElementById('categoryChart').getContext('2d');
         const trendCtx = document.getElementById('trendChart').getContext('2d');
 
@@ -197,11 +223,15 @@ class FinanceTracker {
     }
 
     updateCharts() {
+        if (typeof Chart === 'undefined') {
+            return;
+        }
         this.updateCategoryChart();
         this.updateTrendChart();
     }
 
     updateCategoryChart() {
+        if (!this.categoryChart) return;
         const expenses = this.transactions.filter(t => t.type === 'expense');
         const categoryTotals = {};
 
@@ -220,6 +250,7 @@ class FinanceTracker {
     }
 
     updateTrendChart() {
+        if (!this.trendChart) return;
         const monthlyData = {};
 
         this.transactions.forEach(transaction => {
