@@ -146,7 +146,19 @@
         </div>
         <div id="budgetList"></div>
         <div class="budget-form">
-          <input type="text" id="budgetCategory" placeholder="Category">
+          <select id="budgetCategory" required>
+            <option value="">Select Category</option>
+            <option value="food">🍽️ Food & Dining</option>
+            <option value="transportation">🚗 Transportation</option>
+            <option value="shopping">🛍️ Shopping</option>
+            <option value="entertainment">🎬 Entertainment</option>
+            <option value="utilities">⚡ Utilities</option>
+            <option value="healthcare">🏥 Healthcare</option>
+            <option value="salary">💼 Salary</option>
+            <option value="freelance">💻 Freelance</option>
+            <option value="investment">📈 Investment</option>
+            <option value="other">📋 Other</option>
+          </select>
           <input type="number" id="budgetAmount" placeholder="Budget Amount" step="0.01">
           <button onclick="addBudget()" class="btn-secondary">
             <i class="fas fa-plus"></i>
