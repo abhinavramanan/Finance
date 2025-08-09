@@ -157,9 +157,8 @@ class FinanceTracker {
 
     initCharts() {
         if (typeof Chart === 'undefined') {
-            // Fallback when Chart.js is not available
-            document.getElementById('categoryChart').innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-muted); font-style: italic;">Chart library not available</div>';
-            document.getElementById('trendChart').innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-muted); font-style: italic;">Chart library not available</div>';
+            // Fallback when Chart.js is not available - create CSS-based charts
+            this.createFallbackCharts();
             return;
         }
 
@@ -224,10 +223,142 @@ class FinanceTracker {
 
     updateCharts() {
         if (typeof Chart === 'undefined') {
+            this.updateFallbackCharts();
             return;
         }
         this.updateCategoryChart();
         this.updateTrendChart();
+    }
+
+    createFallbackCharts() {
+        const categoryChart = document.getElementById('categoryChart');
+        const trendChart = document.getElementById('trendChart');
+        
+        // Create fallback category chart container
+        categoryChart.innerHTML = `
+            <div class="fallback-chart">
+                <div id="fallbackCategoryChart" class="fallback-pie-chart">
+                    <div class="chart-placeholder">No expense data yet</div>
+                </div>
+            </div>
+        `;
+        
+        // Create fallback trend chart container  
+        trendChart.innerHTML = `
+            <div class="fallback-chart">
+                <div id="fallbackTrendChart" class="fallback-line-chart">
+                    <div class="chart-placeholder">No trend data yet</div>
+                </div>
+            </div>
+        `;
+        
+        this.updateFallbackCharts();
+    }
+
+    updateFallbackCharts() {
+        this.updateFallbackCategoryChart();
+        this.updateFallbackTrendChart();
+    }
+
+    updateFallbackCategoryChart() {
+        const container = document.getElementById('fallbackCategoryChart');
+        if (!container) return;
+        
+        const expenses = this.transactions.filter(t => t.type === 'expense');
+        const categoryTotals = {};
+
+        expenses.forEach(transaction => {
+            categoryTotals[transaction.category] = (categoryTotals[transaction.category] || 0) + transaction.amount;
+        });
+
+        const categories = Object.keys(categoryTotals);
+        const total = Object.values(categoryTotals).reduce((sum, val) => sum + val, 0);
+
+        if (categories.length === 0) {
+            container.innerHTML = '<div class="chart-placeholder">No expense data yet</div>';
+            return;
+        }
+
+        // Create simple bar chart representation
+        const chartHtml = categories.map((category, index) => {
+            const amount = categoryTotals[category];
+            const percentage = ((amount / total) * 100).toFixed(1);
+            const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+            const color = colors[index % colors.length];
+            
+            return `
+                <div class="fallback-category-item">
+                    <div class="category-info">
+                        <span class="category-name">${category.charAt(0).toUpperCase() + category.slice(1)}</span>
+                        <span class="category-amount">$${amount.toFixed(2)} (${percentage}%)</span>
+                    </div>
+                    <div class="category-bar">
+                        <div class="category-bar-fill" style="width: ${percentage}%; background-color: ${color}"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="fallback-category-legend">
+                ${chartHtml}
+            </div>
+        `;
+    }
+
+    updateFallbackTrendChart() {
+        const container = document.getElementById('fallbackTrendChart');
+        if (!container) return;
+        
+        const monthlyData = {};
+
+        this.transactions.forEach(transaction => {
+            const monthKey = new Date(transaction.date).toISOString().slice(0, 7);
+            if (!monthlyData[monthKey]) {
+                monthlyData[monthKey] = { income: 0, expenses: 0 };
+            }
+            monthlyData[monthKey][transaction.type === 'income' ? 'income' : 'expenses'] += transaction.amount;
+        });
+
+        const sortedMonths = Object.keys(monthlyData).sort();
+        
+        if (sortedMonths.length === 0) {
+            container.innerHTML = '<div class="chart-placeholder">No trend data yet</div>';
+            return;
+        }
+
+        const maxValue = Math.max(
+            ...sortedMonths.map(month => Math.max(monthlyData[month].income, monthlyData[month].expenses))
+        );
+
+        const chartHtml = sortedMonths.map(month => {
+            const data = monthlyData[month];
+            const incomeHeight = maxValue > 0 ? (data.income / maxValue) * 100 : 0;
+            const expenseHeight = maxValue > 0 ? (data.expenses / maxValue) * 100 : 0;
+            const monthName = new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+            
+            return `
+                <div class="trend-month">
+                    <div class="trend-bars">
+                        <div class="trend-bar income-bar" style="height: ${incomeHeight}%" title="Income: $${data.income.toFixed(2)}"></div>
+                        <div class="trend-bar expense-bar" style="height: ${expenseHeight}%" title="Expenses: $${data.expenses.toFixed(2)}"></div>
+                    </div>
+                    <div class="trend-label">${monthName}</div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="fallback-trend-chart">
+                <div class="trend-legend">
+                    <span class="legend-item"><span class="legend-color income-color"></span> Income</span>
+                    <span class="legend-item"><span class="legend-color expense-color"></span> Expenses</span>
+                </div>
+                <div class="trend-container">
+                    ${chartHtml}
+                </div>
+            </div>
+        `;
     }
 
     updateCategoryChart() {
